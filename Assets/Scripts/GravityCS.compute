@@ -1,0 +1,24 @@
+
+#pragma kernel CSMain
+
+struct ArrowData
+{
+    float3 position;
+    float3 direction;
+};
+
+RWStructuredBuffer<ArrowData> arrows;
+RWStructuredBuffer<float3> bodies;
+RWStructuredBuffer<float> weights;
+
+[numthreads(1,1024,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    ArrowData arrow = arrows[id.x];
+    float3 bodyPosition = bodies[id.y];
+    float dist = distance(arrow.position, bodyPosition);
+    float weight = 1.0 / (dist * dist);
+    weight = min(100000000, weight);
+    weights[id.x + id.y * arrows.Length] = weight;
+    arrows[id.x] = arrow;
+}
